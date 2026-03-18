@@ -1,0 +1,25 @@
+{
+  "name": "ai-copilot-ecommerce",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "openai": "latest"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
+    "@types/node": "25.5.0",
+    "@types/react": "19.2.14",
+    "autoprefixer": "^10.4.27",
+    "next": "^15.5.13",
+    "postcss": "^8.5.8",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwindcss": "^3.4.19",
+    "typescript": "5.9.3"
+  }
+}
