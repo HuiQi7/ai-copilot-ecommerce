@@ -44,13 +44,13 @@ export async function POST(request: NextRequest) {
       console.log('API Response Status:', apiResponse.status)
       const data = await apiResponse.json()
       console.log('API Response Data:', data)
-      const result = data.choices[0]?.message?.content || ''
+      const result = data.choices?.[0]?.message?.content || ''
       console.log('Result:', result)
       
       // Parse the result into structured response
-      const summaryMatch = result.match(/###\s*1\. Summary[\s\S]*?\s*([\s\S]*?)###\s*2\. Risks/)
-      const riskMatch = result.match(/###\s*2\. Risks[\s\S]*?\s*([\s\S]*?)###\s*3\. Suggestions/)
-      const suggestionMatch = result.match(/###\s*3\. Suggestions[\s\S]*?\s*([\s\S]*)$/)
+      const summaryMatch = result.match(/1\.\s*\*\*Summary[\s\S]*?\*\*[\s\S]*?([\s\S]*?)2\.\s*\*\*Risks/)
+      const riskMatch = result.match(/2\.\s*\*\*Risks[\s\S]*?\*\*[\s\S]*?([\s\S]*?)3\.\s*\*\*Suggestions/)
+      const suggestionMatch = result.match(/3\.\s*\*\*Suggestions[\s\S]*?\*\*[\s\S]*?([\s\S]*)$/)
 
       response = {
         summary: summaryMatch ? summaryMatch[1].trim() : '',
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       })
 
       const data = await apiResponse.json()
-      const reply = data.choices[0]?.message?.content || ''
+      const reply = data.choices?.[0]?.message?.content || ''
 
       response = {
         summary: '',
