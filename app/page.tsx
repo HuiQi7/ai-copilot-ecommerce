@@ -1,5 +1,7 @@
 "use client"
 import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { AnalysisType, Tone } from './types'
 
 export default function Home() {
@@ -14,11 +16,13 @@ export default function Home() {
     suggestion: '',
     reply: ''
   })
+  const [error, setError] = useState('')
 
   const handleAnalyze = async () => {
     if (!input.trim()) return
 
     setLoading(true)
+    setError('')
     try {
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -33,13 +37,15 @@ export default function Home() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to analyze content')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to analyze content')
       }
 
       const data = await response.json()
       setResult(data)
     } catch (error) {
       console.error('Error analyzing content:', error)
+      setError(error instanceof Error ? error.message : 'An unknown error occurred')
     } finally {
       setLoading(false)
     }
@@ -125,6 +131,11 @@ export default function Home() {
             'Analyze'
           )}
         </button>
+        {error && (
+          <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
       </div>
 
       {Object.values(result).some(value => value) && (
@@ -154,17 +165,31 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="prose max-w-none">
-                {activeTab === 'summary' && <p>{result.summary}</p>}
-                {activeTab === 'risk' && <p>{result.risk}</p>}
-                {activeTab === 'suggestion' && <p>{result.suggestion}</p>}
+              <div className="prose prose-sm max-w-none">
+                {activeTab === 'summary' && (
+                  <div className="space-y-4">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.summary}</ReactMarkdown>
+                  </div>
+                )}
+                {activeTab === 'risk' && (
+                  <div className="space-y-4">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.risk}</ReactMarkdown>
+                  </div>
+                )}
+                {activeTab === 'suggestion' && (
+                  <div className="space-y-4">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.suggestion}</ReactMarkdown>
+                  </div>
+                )}
               </div>
             </>
           ) : (
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Suggested Reply</h3>
-              <div className="prose max-w-none">
-                <p>{result.reply}</p>
+              <div className="prose prose-sm max-w-none">
+                <div className="space-y-4">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.reply}</ReactMarkdown>
+                </div>
               </div>
             </div>
           )}
