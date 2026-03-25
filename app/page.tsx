@@ -13,6 +13,7 @@ export default function Home() {
   const [reviewLoading, setReviewLoading] = useState(false)
   const [reviewResult, setReviewResult] = useState<ReviewInsightsResponse | null>(null)
   const [reviewError, setReviewError] = useState('')
+  const [csvFile, setCsvFile] = useState<File | null>(null)
   
   // Support Copilot state
   const [supportInput, setSupportInput] = useState('')
@@ -149,6 +150,50 @@ export default function Home() {
     setSupportInput(sampleSupportMessage)
   }
 
+  // Handle CSV file upload
+  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setCsvFile(file)
+      // Parse CSV file
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const text = event.target?.result as string
+        const reviews = parseCsv(text)
+        setReviewInput(reviews.join('\n\n'))
+      }
+      reader.readAsText(file)
+    }
+  }
+
+  // Parse CSV file to extract reviews
+  const parseCsv = (text: string): string[] => {
+    const lines = text.split('\n')
+    const reviews: string[] = []
+    
+    // Skip header row
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim()
+      if (line) {
+        // Split by comma, but handle quoted values
+        const columns = line.split(/,(?=(?:[^"]*"[^"]*")*(?![^"]*"))/)
+        // Assuming the first column is the review text
+        const review = columns[0].replace(/^"|"$/g, '')
+        if (review) {
+          reviews.push(review)
+        }
+      }
+    }
+    
+    return reviews
+  }
+
+  // Clear CSV file
+  const clearCsvFile = () => {
+    setCsvFile(null)
+    setReviewInput('')
+  }
+
   return (
     <div className="container py-12">
       <div className="text-center mb-12">
@@ -197,6 +242,38 @@ export default function Home() {
               <label htmlFor="reviewInput" className="block text-sm font-medium text-gray-700 mb-2">
                 Product Reviews
               </label>
+              
+              {/* CSV File Upload */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload CSV File
+                </label>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCsvUpload}
+                    disabled={reviewLoading}
+                    className="file-input file-input-sm file-input-bordered"
+                  />
+                  {csvFile && (
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-600">{csvFile.name}</span>
+                      <button
+                        className="btn btn-sm btn-outline"
+                        onClick={clearCsvFile}
+                        disabled={reviewLoading}
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Upload a CSV file with reviews (first column should contain review text)
+                </p>
+              </div>
+              
               <textarea
                 id="reviewInput"
                 className="textarea h-64"
