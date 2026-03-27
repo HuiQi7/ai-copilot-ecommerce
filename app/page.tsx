@@ -1,10 +1,21 @@
 "use client"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { AnalysisType, Tone, ReviewInsightsResponse, SupportCopilotResponse } from './types'
 
 export default function Home() {
+  const router = useRouter()
+  
+  // Check if user is logged in
+  useEffect(() => {
+    const user = localStorage.getItem('user')
+    if (!user) {
+      router.push('/login')
+    }
+  }, [router])
+  
   // Main state
   const [activeDashboardTab, setActiveDashboardTab] = useState('review-analysis')
   
@@ -194,16 +205,40 @@ export default function Home() {
     setReviewInput('')
   }
 
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    router.push('/login')
+  }
+
   return (
-    <div className="container py-12">
-      <div className="text-center mb-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          AI Copilot for E-commerce Operations
-        </h1>
-        <p className="text-gray-600">
-          Analyze product reviews, generate customer support replies, and gain insights with AI
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation Bar */}
+      <nav className="bg-white shadow-sm">
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <h1 className="text-xl font-bold text-gray-900">
+              AI Copilot for E-commerce
+            </h1>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+          >
+            Logout
+          </button>
+        </div>
+      </nav>
+      
+      <div className="container py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            AI Copilot for E-commerce Operations
+          </h1>
+          <p className="text-gray-600">
+            Analyze product reviews, generate customer support replies, and gain insights with AI
+          </p>
+        </div>
 
       {/* Dashboard Tabs */}
       <div className="border-b border-gray-200 mb-6">
@@ -543,6 +578,7 @@ export default function Home() {
           )}
         </div>
       )}
+      </div>
     </div>
   )
 }
